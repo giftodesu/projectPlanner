@@ -4,7 +4,7 @@ package projectsPlanner;
 
 import javax.swing.JFrame;
 
-public class Window  {
+public class Main  {
 	
 	public static void main(String []args) {
 		new LoginFrame();
