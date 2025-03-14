@@ -17,7 +17,7 @@ public class WelcomeFrame extends JFrame implements ActionListener{
         this.setTitle("Projects Planner- create project for "+userName);
         this.setIconImage(icn.getImage());
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.getContentPane().setBackground(new Color(255, 192, 0)); 
        
        

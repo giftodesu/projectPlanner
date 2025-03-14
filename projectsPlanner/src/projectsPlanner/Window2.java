@@ -23,7 +23,7 @@ public class Window2 extends JFrame implements ActionListener{
 	   setSize(900, 600);
 	      setLocationRelativeTo(null);
 	      setLayout(new BorderLayout());
-	      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE );
+	      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	      createTaskTable();
 	      createButtons();
 	      createLabel();
