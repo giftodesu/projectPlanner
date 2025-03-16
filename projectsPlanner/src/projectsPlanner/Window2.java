@@ -1,12 +1,21 @@
 package projectsPlanner;
-
 import javax.swing.*;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 public class Window2 extends JFrame implements ActionListener{
 	 ImageIcon icn = new ImageIcon("1501772.png");
@@ -16,8 +25,11 @@ public class Window2 extends JFrame implements ActionListener{
 	 private JLabel title,responsible,description,startd,endd,satut,duration;
 	 private JTextField titl,resp,desc,sd,ed;
 	 private JComboBox <String>statu;
-	 private String tit,res,des,sdd,edd,sta;
+	 private long durationdays,diffin;
+	 private String tit,res,des,sdd,edd,sta,dur="aa";
 	 private String [] statuses= {"Not Started","In Progress","Completed"};
+	 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private  Date sdate,edate;
 	 ImageIcon img = new ImageIcon("12.43.10.jpeg");
 	  public Window2(String projectTit) {
 	   setSize(900, 600);
@@ -39,7 +51,7 @@ public class Window2 extends JFrame implements ActionListener{
 	 
 	 public void actionPerformed(ActionEvent e) {
 	    if(e.getSource().equals(addt)){
-	     try {
+	    
 	      tit= titl.getText();
 	      res=resp.getText();
 	      des=desc.getText();
@@ -51,24 +63,50 @@ public class Window2 extends JFrame implements ActionListener{
 	       JOptionPane.showMessageDialog(this, "all fields must be filled !","ERROR",JOptionPane.ERROR_MESSAGE);
 	      }
 	      else {
+	    	  dateFormat.setLenient(false);
+	    	  
 	      Vector line = new Vector();
-	      line.add(tit);
-	      line.add(res);
-	      line.add(des);
-	      line.add(sdd);
-	      line.add(edd);
-	      line.add(sta);
-	      tableModel.addRow(line);
-	      titl.setText("");
-	      resp.setText("");
-	      desc.setText("");
-	      sd.setText("");
-	      ed.setText("");
+	     
+	      try {
+	    	  sdate=dateFormat.parse(sdd);
+	    	  edate=dateFormat.parse(edd);
+	    	  if(sdate.compareTo(edate)==0) {
+	    		  JOptionPane.showMessageDialog(this, "Start Date and End Date are the same","ERROR",JOptionPane.ERROR_MESSAGE);
+	    		  sd.setText("");
+		    	  ed.setText("");
+	    	  }else {
+	    	  if(sdate.compareTo(edate)>0) {
+	    		  JOptionPane.showMessageDialog(this, "Start Date must be before End Date","ERROR",JOptionPane.ERROR_MESSAGE);
+	    		  sd.setText("");
+		    	  ed.setText("");
+	    	  }
+	    	  else {
+	    		  diffin=edate.getTime()-sdate.getTime();
+	    		  durationdays=TimeUnit.DAYS.convert(diffin,TimeUnit.MILLISECONDS);
+	    	     line.add(tit);
+	             line.add(res);
+	             line.add(des);
+	             //line.add(sdd);
+	            //line.add(edd);
+	             line.add(durationdays+" days");
+	             line.add(sta);
+	             tableModel.addRow(line);
+	             titl.setText("");
+	             resp.setText("");
+	             desc.setText("");
+	             sd.setText("");
+	             ed.setText("");
+	    	  }
+	    	  }
+	          	      
+	      }catch(ParseException m) {
+	    	  JOptionPane.showMessageDialog(this, "invalid date format use yyyy-MM-dd","ERROR",JOptionPane.ERROR_MESSAGE);
+	    	  sd.setText("");
+	    	  ed.setText("");
+	      }
 	     
 	      }
-	     }catch(Exception ex){
-	      
-	        }
+	    
 	    }if(e.getSource().equals(deletet)){
 	     int reponse = JOptionPane.showConfirmDialog(null,"Supprimer cette ligne ?", "Confirmation",  JOptionPane.OK_CANCEL_OPTION);
 	           if (reponse == 0) {
@@ -84,14 +122,17 @@ public class Window2 extends JFrame implements ActionListener{
 	 
 	 
 	 public void createTaskTable() {
-	    String []col=new String[]{"Title","responsible","Description","Start Date","End Date","Status","duration"};
+	    String []col=new String[]{"Title","responsible","Description","duration","Status"};
 	    tableModel=new DefaultTableModel(col,0);
 	    
 	    table =new JTable(tableModel);
 	    statu = new JComboBox<>(statuses);
 	    
-	    table.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(statu));
+	    table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(statu));
+	    table.getColumn("Status").setCellRenderer(new StatusColorRenderer());
+
 	    table.setRowHeight(30);
+	    
 	    JScrollPane Scroll=new JScrollPane(table);
 	    add(Scroll, BorderLayout.EAST);
 	 }
@@ -176,7 +217,8 @@ public class Window2 extends JFrame implements ActionListener{
 	   row3.setBackground(new Color(255,192,0));
 	   
 	   JPanel row4 = new JPanel(new FlowLayout(FlowLayout.LEFT,24, 5));
-	   sd = new JTextField();
+	   sd = new JTextField("yyyy-MM-dd");
+	   sd.setForeground(Color.DARK_GRAY);
 	   sd.setPreferredSize(new Dimension(300,50));
 	   row4.add(startd);
 	   row4.add(sd);
@@ -184,7 +226,8 @@ public class Window2 extends JFrame implements ActionListener{
 	   row4.setBackground(new Color(255,192,0));
 	  
 	   JPanel row5 = new JPanel(new FlowLayout(FlowLayout.LEFT,27, 5));
-	   ed = new JTextField();
+	   ed = new JTextField("yyyy-MM-dd");
+	   ed.setForeground(Color.DARK_GRAY);
 	   ed.setPreferredSize(new Dimension(300,50));
 	   row5.add(endd);
 	   row5.add(ed);
@@ -212,6 +255,42 @@ public class Window2 extends JFrame implements ActionListener{
 	  
 	  
 	 }
+	 
 	
 
 	}
+
+class StatusColorRenderer extends DefaultTableCellRenderer {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    	
+        Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        String status = (String) value;
+
+        
+        switch (status) {
+            case "Not Started":
+                cell.setBackground(Color.RED);
+                cell.setForeground(Color.BLACK);
+                break;
+            case "In Progress":
+                cell.setBackground(new Color(255,227,2));
+                cell.setForeground(Color.BLACK);
+                break;
+            case "Completed":
+                cell.setBackground(new Color(80,195,108));
+                cell.setForeground(Color.BLACK);
+                break;
+            default:
+                cell.setBackground(Color.WHITE);
+                cell.setForeground(Color.BLACK);
+                break;
+        }
+
+        return cell;
+    }
+}
+
+
+
+
