@@ -29,7 +29,7 @@ public class Window2 extends JFrame implements ActionListener{
 	 private String tit,res,des,sdd,edd,sta,dur="aa";
 	 private String [] statuses= {"Not Started","In Progress","Completed"};
 	 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	private  Date sdate,edate;
+	private  Date sdate,edate,enddDate;
 	 ImageIcon img = new ImageIcon("12.43.10.jpeg");
 	  public Window2(String projectTit) {
 	   setSize(900, 600);
@@ -57,6 +57,7 @@ public class Window2 extends JFrame implements ActionListener{
 	      des=desc.getText();
 	      sdd=sd.getText();
 	      edd=ed.getText();
+	     
 	      sta=(String)statu.getSelectedItem();
 	      if(tit.isEmpty()||res.isEmpty()||des.isEmpty()||sdd.isEmpty()||edd.isEmpty()||sta.isEmpty())
 	      {
@@ -70,6 +71,13 @@ public class Window2 extends JFrame implements ActionListener{
 	      try {
 	    	  sdate=dateFormat.parse(sdd);
 	    	  edate=dateFormat.parse(edd);
+	    	  //enddDate=edate;
+	    	 if(canStartTask(table,sdd)==false) {
+	    		 JOptionPane.showMessageDialog(this, "tou cannot start the new task before completing the previous task.please change the start date","ERROR",JOptionPane.ERROR_MESSAGE);
+	    		 sd.setText("");
+	    	 }else {
+	    		 
+	    	 
 	    	  if(sdate.compareTo(edate)==0) {
 	    		  JOptionPane.showMessageDialog(this, "Start Date and End Date are the same","ERROR",JOptionPane.ERROR_MESSAGE);
 	    		  sd.setText("");
@@ -89,6 +97,7 @@ public class Window2 extends JFrame implements ActionListener{
 	             //line.add(sdd);
 	            //line.add(edd);
 	             line.add(durationdays+" days");
+	             line.add(edd);
 	             line.add(sta);
 	             tableModel.addRow(line);
 	             titl.setText("");
@@ -96,9 +105,11 @@ public class Window2 extends JFrame implements ActionListener{
 	             desc.setText("");
 	             sd.setText("");
 	             ed.setText("");
+	             
 	    	  }
 	    	  }
-	          	      
+	    	 }
+	    		          	      
 	      }catch(ParseException m) {
 	    	  JOptionPane.showMessageDialog(this, "invalid date format use yyyy-MM-dd","ERROR",JOptionPane.ERROR_MESSAGE);
 	    	  sd.setText("");
@@ -121,14 +132,30 @@ public class Window2 extends JFrame implements ActionListener{
 	 }
 	 
 	 
+		    public  boolean canStartTask(JTable table, String newTaskStartDate) {
+		        int lastRow = table.getRowCount() - 1; 
+		        int endDateColumn = 4;
+
+		        if (lastRow >= 0) { 
+		            String lastEndDate = table.getValueAt(lastRow, endDateColumn).toString();
+		            
+		          
+		            return newTaskStartDate.compareTo(lastEndDate) >= 0;
+		        }
+		        return true;
+		    }
+		
+	 
+	 
+	 
 	 public void createTaskTable() {
-	    String []col=new String[]{"Title","responsible","Description","duration","Status"};
+	    String []col=new String[]{"Title","responsible","Description","duration","End Date","Status"};
 	    tableModel=new DefaultTableModel(col,0);
 	    
 	    table =new JTable(tableModel);
 	    statu = new JComboBox<>(statuses);
 	    
-	    table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(statu));
+	    table.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(statu));
 	    table.getColumn("Status").setCellRenderer(new StatusColorRenderer());
 
 	    table.setRowHeight(30);
@@ -255,7 +282,9 @@ public class Window2 extends JFrame implements ActionListener{
 	  
 	  
 	 }
-	 
+	 public static void main(String args[]) {
+		 Window2 win=new Window2();
+	 }
 	
 
 	}
@@ -267,7 +296,7 @@ class StatusColorRenderer extends DefaultTableCellRenderer {
         Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         String status = (String) value;
 
-        
+        // تغيير اللون حسب الحالة
         switch (status) {
             case "Not Started":
                 cell.setBackground(Color.RED);
@@ -294,3 +323,5 @@ class StatusColorRenderer extends DefaultTableCellRenderer {
 
 
 
+
+	 
