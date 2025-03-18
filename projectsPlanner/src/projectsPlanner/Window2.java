@@ -9,29 +9,170 @@ import javax.swing.table.DefaultTableModel;
 
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Scanner;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.ParseException;
 
+
+
 public class Window2 extends JFrame implements ActionListener{
+	
+	private JTextField titl,resp,desc,sd,ed;
+	public void populateTaskTable(Project project) {
+	    tableModel.setRowCount(0); 
+
+	    for (Task task : project.tasks) {
+	        Vector<Object> row = new Vector<>();
+	        row.add(task.getTitle());
+	        row.add(task.getResponsiblePerson());
+	        row.add(task.getDescription());
+	        row.add(task.getDuration()); 
+	        row.add(task.getEndDate());
+	        row.add(task.getStatus());
+	        tableModel.addRow(row);
+	    }
+	}
+
+	
+	 public static Project uploadFromFile() {
+			Project upP = null;
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader("project.txt"));
+				BufferedReader reader2 = new BufferedReader(new FileReader("tasks.txt"));
+				try {
+					String line = reader.readLine();
+					String s1,s2,s3,s4,s5,s6;
+					
+					
+					
+					if (line !=null) {
+						s1 = reader.readLine();
+						s2 = reader.readLine();
+						upP= new Project(s1,s2);
+						line = reader.readLine();
+					}
+					line=reader2.readLine();
+					while(line !=null) {
+						line=reader2.readLine();
+						
+						s1=reader2.readLine();
+						s2=reader2.readLine();
+						s3=reader2.readLine();
+						s4=reader2.readLine();
+						s5=reader2.readLine();
+						s6=reader2.readLine();
+						upP.tasks.add(new Task(s1,s2,s3,s4,s5,s6));
+						line=reader2.readLine();
+						
+					}
+					
+					
+					reader.close();
+					reader2.close();
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+			
+			
+			} catch (FileNotFoundException e) {
+				
+				e.printStackTrace();
+			}
+			return upP;
+			
+			
+			
+			
+		}
+	
+	public void saveProject(Project p) {
+	    if (p == null) {
+	        JOptionPane.showMessageDialog(this, "Project is null!", "ERROR", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
+
+	    if (p.tasks == null || p.tasks.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "No tasks to save!", "Warning", JOptionPane.WARNING_MESSAGE);
+	        return;
+	    }
+
+	    try {
+	        File projectFile = new File("project.txt");
+	        boolean projectExists = false;
+
+	        
+	        if (projectFile.exists()) {
+	        try (Scanner scanner = new Scanner(projectFile)) {
+	         while (scanner.hasNextLine()) {
+	           String line = scanner.nextLine().trim();
+	           if (line.equals(p.getTitle())) { 
+	              if (scanner.hasNextLine() && scanner.nextLine().trim().equals(p.getDescription())) {
+	                 projectExists = true;
+	                  break;
+	               }
+	            }
+	           }
+	         }
+	        }
+
+	      
+	        if (!projectExists) {
+	            try (BufferedWriter writer = new BufferedWriter(new FileWriter("project.txt"))) {
+	                writer.write("\n" + p.getTitle() + "\n" + p.getDescription() + "\n");
+	            }
+	        }
+
+	        File taskFile = new File("tasks.txt");
+	        
+	        try (BufferedWriter writer2 = new BufferedWriter(new FileWriter(taskFile, true))) {
+	            for (Task t : p.tasks) {
+	                writer2.write("\n" + t.getTitle() + "\n" + t.getDescription() + "\n" +
+	                              t.getResponsiblePerson() + "\n" + t.getStatus() + "\n" +
+	                              "\n"+t.getStartDate()+"\n"+ t.getEndDate() + "\n");
+	            }
+	        }
+
+	        JOptionPane.showMessageDialog(this, "Project saved successfully!");
+
+	    } catch (IOException e) {
+	        JOptionPane.showMessageDialog(this, "Error saving project: " + e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+	    }
+	}
+
+	
 	 ImageIcon icn = new ImageIcon("1501772.png");
 	 private JTable table;
 	 private DefaultTableModel tableModel;
 	 private JButton addt,deletet,save;
 	 private JLabel title,responsible,description,startd,endd,satut,duration;
-	 private JTextField titl,resp,desc,sd,ed;
+	
 	 private JComboBox <String>statu;
 	 private long durationdays,diffin;
-	 private String tit,res,des,sdd,edd,sta,dur="aa";
+	 
+	// private String tit,res,des,sdd,edd,sta,dur="aa";
 	 private String [] statuses= {"Not Started","In Progress","Completed"};
+	 
+	 
 	 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	private  Date sdate,edate,enddDate;
 	 ImageIcon img = new ImageIcon("12.43.10.jpeg");
-	  public Window2(String projectTit) {
+	private Project p;
+	  public Window2(Project p) {
+		  this.p=p;
 	   setSize(900, 600);
 	      setLocationRelativeTo(null);
 	      setLayout(new BorderLayout());
@@ -40,40 +181,53 @@ public class Window2 extends JFrame implements ActionListener{
 	      createButtons();
 	      createLabel();
 	      getContentPane().setBackground(new Color(255, 192, 0));
-	      setTitle(projectTit+" - adding tasks");
+	      setTitle(p.getTitle()+" - adding tasks");
 	      addt.addActionListener(this);
 	      deletet.addActionListener(this);
 	      setIconImage(img.getImage());
 	      setVisible(true);
 	      this.setIconImage(icn.getImage());
+	      
 	  }
 	 
-	 
-	 public void actionPerformed(ActionEvent e) {
+	  
+	  
+	  
+	  public void actionPerformed(ActionEvent e) {
 	    if(e.getSource().equals(addt)){
+	    Task t = new Task();
 	    
-	      tit= titl.getText();
-	      res=resp.getText();
-	      des=desc.getText();
-	      sdd=sd.getText();
-	      edd=ed.getText();
-	     
-	      sta=(String)statu.getSelectedItem();
-	      if(tit.isEmpty()||res.isEmpty()||des.isEmpty()||sdd.isEmpty()||edd.isEmpty()||sta.isEmpty())
+	      t.setTitle(titl.getText());
+	      t.setResponsiblePerson(resp.getText());
+	      t.setDescription(desc.getText());
+	      
+	      t.setStartDate(sd.getText());
+	      t.setEndDate(ed.getText());
+	      t.setStatus((String)statu.getSelectedItem());
+	      try {
+	      p.tasks.add(t);}catch(NullPointerException o) {
+	    	  o.printStackTrace();
+	      }
+	      
+	      
+	      if(t.getTitle().isEmpty()||t.getResponsiblePerson().isEmpty()||t.getDescription().isEmpty()||t.getStartDate().isEmpty()||t.getEndDate().isEmpty()||t.getStatus().isEmpty())
 	      {
 	       JOptionPane.showMessageDialog(this, "all fields must be filled !","ERROR",JOptionPane.ERROR_MESSAGE);
 	      }
 	      else {
+	    	 
 	    	  dateFormat.setLenient(false);
+	      }
+	    	  
 	    	  
 	      Vector line = new Vector();
 	     
 	      try {
-	    	  sdate=dateFormat.parse(sdd);
-	    	  edate=dateFormat.parse(edd);
-	    	  //enddDate=edate;
-	    	 if(canStartTask(table,sdd)==false) {
-	    		 JOptionPane.showMessageDialog(this, "tou cannot start the new task before completing the previous task.please change the start date","ERROR",JOptionPane.ERROR_MESSAGE);
+	    	  sdate=dateFormat.parse(t.getStartDate());
+	    	  edate=dateFormat.parse(t.getEndDate());
+	    	  //endDate=edate;
+	    	 if(canStartTask(table,t.getStartDate())==false) {
+	    		 JOptionPane.showMessageDialog(this, "You cannot start the new task before completing the previous task. Modify the start date","ERROR",JOptionPane.ERROR_MESSAGE);
 	    		 sd.setText("");
 	    	 }else {
 	    		 
@@ -91,34 +245,36 @@ public class Window2 extends JFrame implements ActionListener{
 	    	  else {
 	    		  diffin=edate.getTime()-sdate.getTime();
 	    		  durationdays=TimeUnit.DAYS.convert(diffin,TimeUnit.MILLISECONDS);
-	    	     line.add(tit);
-	             line.add(res);
-	             line.add(des);
-	             //line.add(sdd);
-	            //line.add(edd);
+	    	     line.add(t.getTitle());
+	             line.add(t.getResponsiblePerson());
+	             line.add(t.getDescription());
+	             //line.add(t.getStartDate());
+	            //line.add(t.getEndDate());
 	             line.add(durationdays+" days");
-	             line.add(edd);
-	             line.add(sta);
+	             line.add(t.getEndDate());
+	             line.add(t.getStatus());
 	             tableModel.addRow(line);
 	             titl.setText("");
 	             resp.setText("");
 	             desc.setText("");
 	             sd.setText("");
 	             ed.setText("");
-	             
 	    	  }
 	    	  }
 	    	 }
-	    		          	      
-	      }catch(ParseException m) {
+	      }
+	    	         	      
+	      
+	    	 catch(ParseException m) {
 	    	  JOptionPane.showMessageDialog(this, "invalid date format use yyyy-MM-dd","ERROR",JOptionPane.ERROR_MESSAGE);
 	    	  sd.setText("");
 	    	  ed.setText("");
 	      }
-	     
-	      }
+	    }
+	 
+	      
 	    
-	    }if(e.getSource().equals(deletet)){
+	    if(e.getSource().equals(deletet)){
 	     int reponse = JOptionPane.showConfirmDialog(null,"Supprimer cette ligne ?", "Confirmation",  JOptionPane.OK_CANCEL_OPTION);
 	           if (reponse == 0) {
 	            int i = table.getSelectedRow();
@@ -128,6 +284,10 @@ public class Window2 extends JFrame implements ActionListener{
 	           }
 	           
 	     
+	    }if(e.getSource().equals(save)) {
+	    	
+	    	    saveProject(p);
+	    	    JOptionPane.showMessageDialog(this, "Project saved successfully!");
 	    }
 	 }
 	 
@@ -191,6 +351,10 @@ public class Window2 extends JFrame implements ActionListener{
 	  save.setFocusPainted(false);
 	  save.setBorderPainted(false);
 	  save.setOpaque(true);
+	  save.addActionListener(this);
+	
+		  
+	  
 	 
 	  JPanel buttonPanel=new JPanel();
 	  buttonPanel.add(addt);
@@ -282,12 +446,7 @@ public class Window2 extends JFrame implements ActionListener{
 	  
 	  
 	 }
-	 public static void main(String args[]) {
-		 Window2 win=new Window2();
-	 }
 	
-
-	}
 
 class StatusColorRenderer extends DefaultTableCellRenderer {
     @Override
@@ -296,7 +455,6 @@ class StatusColorRenderer extends DefaultTableCellRenderer {
         Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         String status = (String) value;
 
-        // تغيير اللون حسب الحالة
         switch (status) {
             case "Not Started":
                 cell.setBackground(Color.RED);
@@ -318,10 +476,9 @@ class StatusColorRenderer extends DefaultTableCellRenderer {
 
         return cell;
     }
+   
 }
-
-
-
-
-
-	 
+ public static void main(String []args) {
+	 System.out.println("test");
+ }
+}

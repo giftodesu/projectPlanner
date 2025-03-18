@@ -11,7 +11,8 @@ public class WelcomeFrame extends JFrame implements ActionListener{
     ImageIcon icn = new ImageIcon("1501772.png");
     JTextField title = new JTextField();
     JTextArea description = new JTextArea();
-    JButton submit;
+    JButton submit, load;
+    Project p = new Project();
     public WelcomeFrame(String userName) {
         this.setSize(800, 600);
         this.setTitle("Projects Planner- create project for "+userName);
@@ -82,6 +83,17 @@ public class WelcomeFrame extends JFrame implements ActionListener{
        descLbl.setFont(new Font("MV boli",Font.BOLD,18));
        descLbl.setLayout(null);
        descLbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+       
+       load = new JButton("Open project");
+       
+       load.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
+       load.setForeground(Color.WHITE);
+       load.setBackground(new Color(100, 0, 250));
+       load.setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
+       load.setAlignmentX(Component.CENTER_ALIGNMENT); 
+       load.setMaximumSize(new Dimension(200, 50));
+       load.setFocusable(false);
+       load.addActionListener(this);
       
         panel.add(lbl);
         panel.add(Box.createVerticalStrut(100)); 
@@ -94,6 +106,8 @@ public class WelcomeFrame extends JFrame implements ActionListener{
         panel.add(scrollPane);
         panel.add(Box.createVerticalStrut(30)); 
         panel.add(submit);   
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(load);
         
        
         this.add(panel);
@@ -104,18 +118,28 @@ public class WelcomeFrame extends JFrame implements ActionListener{
     //System.out.println(projectTit+"\n"+projectDesc);
         
     }
-    String projectTit;
-    String projectDesc;
-    
     @Override
     public void actionPerformed(ActionEvent e) {
-		 if(e.getSource()==submit){
-		 projectTit = title.getText();
-		 projectDesc = description.getText();
-		new Window2(projectTit);
-		 }
-		 else {System.out.println("Error creating project");}
-	}
+        if (e.getSource() == submit) {
+            if (title.getText().isEmpty() || description.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Project details must be filled", "ERROR", JOptionPane.ERROR_MESSAGE);
+            } else {
+                p.setTitle(title.getText());
+                p.setDescription(description.getText());
+                new Window2(p);
+            }
+        } else if (e.getSource() == load) {
+            Project loadedProject = Window2.uploadFromFile();
+            if (loadedProject != null) {
+                title.setText(loadedProject.getTitle());
+                description.setText(loadedProject.getDescription());
+                Window2 window2 = new Window2(loadedProject);
+                window2.populateTaskTable(loadedProject); 
+            } else {
+                JOptionPane.showMessageDialog(this, "No project found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
 
 }
-

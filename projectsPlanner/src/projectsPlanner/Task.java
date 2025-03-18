@@ -1,19 +1,23 @@
 package projectsPlanner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class Task {
 	private String title;
 	private String description;
-	private Date startDate;
-	private Date endDate;
+	private String startDate;
+	private String endDate;
 	private String status;
-	private int duration;
+	private long duration;
 	private String responsiblePerson;
 	
 	public Task() {}
-	public Task(String title, String description, Date startDate, Date endDate, String status) {
+	public Task(String title, String description, String responsiblePerson,String status,String startDate, String endDate) {
 		this.title = title;
 		this.description = description;
+		this.responsiblePerson= responsiblePerson;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.status = status;
@@ -40,22 +44,22 @@ public class Task {
 	}
 
 
-	public Date getStartDate() {
+	public String getStartDate() {
 		return startDate;
 	}
 
 
-	public void setStartDate(Date startDate) {
+	public void setStartDate(String startDate) {
 		this.startDate = startDate;
 	}
 
 
-	public Date getEndDate() {
+	public String getEndDate() {
 		return endDate;
 	}
 
 
-	public void setEndDate(Date endDate) {
+	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}
 
@@ -70,9 +74,19 @@ public class Task {
 	}
 
 
-	public int getDuration() {
-		return duration;
-	}
+	public long getDuration() {
+		       SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		       try {
+		           Date start = dateFormat.parse(startDate);
+		           Date end = dateFormat.parse(endDate);
+		            long diffInMillies = end.getTime() - start.getTime();
+		            return TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+           } catch (ParseException e) {
+		            e.printStackTrace();
+		            return 0; 
+		       }
+		   }
+		
 
 	public String getResponsiblePerson() {
 		return responsiblePerson;

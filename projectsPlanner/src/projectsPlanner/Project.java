@@ -1,10 +1,13 @@
 package projectsPlanner;
 
+import java.util.ArrayList;
+
 public class Project {
  
   private String title;
   private String description;
   private String responsiblePerson;
+  public ArrayList <Task>  tasks = new ArrayList<>();;
   public Project() {}
   public Project(String title,String description){
    this.title=title;
